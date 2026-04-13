@@ -28,20 +28,20 @@ public abstract class BaseInteractivePuzzlePieceXR : MonoBehaviour
     {
         if (m_IsControllable)
         {
-            if(Input.GetKey(interactKey))
-            // if(interactActionReference.action.IsPressed())
+            if (Input.GetKey(interactKey))
+                // if(interactActionReference.action.IsPressed())
             {
                 activateState = true;
             }
 
-            if(Input.GetKeyDown(interactKey) )
-            // if (interactActionReference.action.WasPressedThisFrame())
+            if (Input.GetKeyDown(interactKey))
+                // if (interactActionReference.action.WasPressedThisFrame())
             {
                 playOneTimeActivateAudio = true;
             }
 
-            if(Input.GetKeyUp(interactKey) )
-            // if(interactActionReference.action.WasReleasedThisFrame())
+            if (Input.GetKeyUp(interactKey))
+                // if(interactActionReference.action.WasReleasedThisFrame())
             {
                 playOneTimeDeactivateAudio = true;
                 activateState = false;
@@ -68,10 +68,26 @@ public abstract class BaseInteractivePuzzlePieceXR : MonoBehaviour
             PlayOneTimeDeactivateAudio();
         }
     }
+    
+    public void FlipUp()
+    {
+        activateState = true;
+    }
+
+    public void FlipDown()
+    {
+        activateState = false;
+    }
+    
+
 
     protected abstract void ApplyActiveState ();
 
     protected abstract void ApplyInactiveState ();
+    
+    
+  
+    
 
     public void PlayOneTimeActivateAudio()
     {
