@@ -11,7 +11,6 @@ public class PuzzleManager : NetworkBehaviour
 
     public void PressButton(string color)
     {
-        // Any player can call the RPC
         RPC_PressButton(color);
     }
 
@@ -26,12 +25,15 @@ public class PuzzleManager : NetworkBehaviour
             if (Index >= sequence.Length)
             {
                 Solved = true;
-                progressManager.RPC_ColorPuzzleSolved();
+                if (progressManager != null)
+                {
+                    progressManager.RPC_ColorPuzzleSolved();
+                }
             }
         }
         else
         {
-            Index = 0; // Reset for everyone if someone messes up
+            Index = 0; 
         }
     }
 }

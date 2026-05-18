@@ -16,13 +16,13 @@ public class Door1 : NetworkBehaviour
 
     public override void Render()
     {
-        // This ensures the door stays open/closed for everyone
+        // If the network data says open, hide colliders and renderers on ALL headsets
         if (IsOpen)
         {
             if (col != null && col.enabled) col.enabled = false;
             foreach (var r in rends)
             {
-                if(r.enabled) r.enabled = false;
+                if (r != null && r.enabled) r.enabled = false;
             }
         }
     }

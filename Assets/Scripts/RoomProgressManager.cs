@@ -9,12 +9,12 @@ public class RoomProgressManager : NetworkBehaviour
     [Networked] public bool ColorSolved { get; set; }
     [Networked] public bool KeySolved { get; set; }
 
-    // This detects changes across the network
     private ChangeDetector _changes;
 
     public override void Spawned()
     {
         _changes = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        CheckCompletion();
     }
 
     public override void Render()
@@ -45,11 +45,16 @@ public class RoomProgressManager : NetworkBehaviour
 
     private void CheckCompletion()
     {
+        // Either player can solve either puzzle, but ONLY the host applies the final door variables
         if (ColorSolved && KeySolved)
         {
-            Debug.Log("Puzzles Done - Opening Doors");
-            if (leftDoor != null) leftDoor.IsOpen = true;
-            if (rightDoor != null) rightDoor.IsOpen = true;
+            Debug.Log("Both puzzles completed - Opening doors via Host Authority");
+            
+            if (Object.HasStateAuthority)
+            {
+                if (leftDoor != null) leftDoor.IsOpen = true;
+                if (rightDoor != null) rightDoor.IsOpen = true;
+            }
         }
     }
 }

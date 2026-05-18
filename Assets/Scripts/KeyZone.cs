@@ -6,31 +6,62 @@ public class KeyZone : NetworkBehaviour
     public RoomProgressManager progressManager;
     public float triggerDistance = 0.25f;
 
+    [Header("Drag Scene Controller Tracking Here")]
+    public Transform targetControllerTransform;
+
+    [Header("Puzzle Rewards")]
+    public GameObject hiddenObject;
+
     [Networked] private bool Solved { get; set; }
+    private ChangeDetector _changes;
+
+    public override void Spawned()
+    {
+        _changes = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        UpdateHiddenObjectVisibility();
+    }
 
     void Update()
     {
-        // Every player checks their own controller locally
-        if (Solved) return;
+        if (Solved || targetControllerTransform == null) return;
 
-        // Note: You must assign the local headset's controller at runtime 
-        // or use OVRInput.GetLocalControllerPosition
-        Vector3 handPos = OVRInput.GetLocalControllerPosition(OVRInput.Controller.LTouch);
-        float dist = Vector3.Distance(handPos, transform.position);
+        // Measures real-world distance from the dragged controller transform
+        float dist = Vector3.Distance(targetControllerTransform.position, transform.position);
 
         if (dist < triggerDistance)
         {
-            Debug.Log("Key puzzle triggered locally");
-            // Tell the Host we solved it
-            RPC_SetSolved();
+            Debug.Log("Key puzzle triggered locally. Requesting Host to solve.");
+            RPC_RequestKeySolve();
         }
     }
 
-    [Rpc(RpcSources.All, RpcTargets.All)]
-    private void RPC_SetSolved()
+    public override void Render()
     {
+        // Change detector forces BOTH headsets to see the hidden object unhide
+        foreach (var change in _changes.DetectChanges(this))
+        {
+            if (change == nameof(Solved))
+            {
+                UpdateHiddenObjectVisibility();
+            }
+        }
+    }
+
+    private void UpdateHiddenObjectVisibility()
+    {
+        if (hiddenObject != null)
+        {
+            hiddenObject.SetActive(Solved);
+        }
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestKeySolve()
+    {
+        if (Solved) return;
+        
         Solved = true;
-        if (Object.HasStateAuthority)
+        if (progressManager != null)
         {
             progressManager.RPC_KeyPuzzleSolved();
         }
